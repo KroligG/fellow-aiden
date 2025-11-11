@@ -1,4 +1,5 @@
 import streamlit as st
+import math
 from fellow_aiden import FellowAiden
 from fellow_aiden.profile import CoffeeProfile
 from openai import OpenAI
@@ -87,6 +88,25 @@ Pulse temperate. Independent temperature to use for a given pulse.  Values range
 # ------------------------------------------------------------------------------
 # Mock / Placeholder functions
 # ------------------------------------------------------------------------------
+def baratza_vario_calculator(um: int) -> str:
+    """
+    Calculates the grind setting for a Baratza Vario based on micron size.
+    Source: https://onyxcoffeelab.com/pages/grind-size-calculator
+    """
+    if not 200 <= um <= 2000:
+        return "-"
+
+    try:
+        b16 = math.floor((um - 230) / 67.98 + 1)
+        num_of_alphabet = math.ceil((um - 230 - (b16 - 1) * 67.98) / 3.09)
+        
+        characters = [0, "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v"]
+        
+        character = characters[int(num_of_alphabet)]
+        return f"{int(b16)}{character}"
+    except (ValueError, IndexError):
+        return "-"
+
 def connect_to_coffee_brewer(email, password):
     """Mock function returning a list of profile dicts."""
     email = email.strip()
@@ -313,6 +333,21 @@ with st.sidebar:
 
         st.markdown("---")
 
+        # ---- Grind Size Calculator ----
+        st.markdown("### Baratza Vario Grind Calculator")
+        micron_input = st.number_input(
+            "Micron Size (μm)",
+            min_value=200,
+            max_value=2000,
+            value=800,
+            step=25,
+            key="micron_input"
+        )
+        if micron_input:
+            grind_setting = baratza_vario_calculator(micron_input)
+            st.metric(label="Vario Grind Setting", value=grind_setting)
+
+        st.markdown("---")
         # ---- Existing Profiles ----
         st.markdown("**Existing Profiles**")
         profiles = st.session_state.brewer_settings["profiles"]
