@@ -1,10 +1,25 @@
-fellowaiden:
+version: '3.8'
+
+services:
+  fellowaiden:
+    # Use 'image' only if you plan to push/pull a pre-built image.
+    # Since you are building locally, this line is optional but harmless.
     image: my-brew-studio-build
     container_name: fellowaiden
+    
+    # This section tells Docker Compose where to find the Dockerfile to build the image.
     build:
       context: .
-      dockerfile: Dockerfile 
+      dockerfile: Dockerfile
+      
+    # This maps the internal container port (8501) to the host machine port (8501).
     ports:
-      - 8501:8501
+      - "8501:8501"
+      
+    # This environment variable sets the PORT inside the container. 
+    # For Streamlit, this is usually unnecessary as it defaults to 8501, but it's okay to include.
     environment:
       - PORT=8501
+      
+    # Recommended: automatically restart the container if it stops unexpectedly
+    restart: unless-stopped

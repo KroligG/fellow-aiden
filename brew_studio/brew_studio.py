@@ -95,10 +95,13 @@ def connect_to_coffee_brewer(email, password):
     if 'aiden' not in st.session_state:
         try:
             local = FellowAiden(email, password)
+            st.session_state['aiden'] = local
         except Exception as e:
             if "incorrect" in str(e):
                 return False
-        st.session_state['aiden'] = local
+            # Re-raise other exceptions to see what's going on
+            st.error(f"An unexpected error occurred: {e}")
+            raise
 
     obj = {
         'device_settings': {
