@@ -247,28 +247,33 @@ with st.sidebar:
     env_email = os.environ.get('FELLOW_EMAIL')
     env_password = os.environ.get('FELLOW_PASSWORD')
 
-    if env_email and env_password:
+    # Automatic connection if credentials are in env and not already connected
+    if env_email and env_password and not st.session_state.brewer_settings:
         email = env_email
         password = env_password
         st.sidebar.success("Fellow credentials loaded from environment.")
-    else:
+        result = connect_to_coffee_brewer(email, password)
+        if not result:
+            st.warning("Failed to connect with credentials from environment.")
+        st.session_state.brewer_settings = result
+
+    # Manual connection form if not connected
+    if not st.session_state.brewer_settings:
         st.header("Fellow Email Address")
         email = st.text_input(" ", placeholder="Enter your email", 
                               key="email", label_visibility="collapsed")
-
         st.header("Fellow Password")
         password = st.text_input(" ", placeholder="Enter your password", 
                                  type="password", key="password", label_visibility="collapsed")
 
-    # Connect button
-    if st.button("Connect"):
-        if email and password:
-            result = connect_to_coffee_brewer(email, password)
-            if not result:
-                st.warning("Incorrect email or password.")
-            st.session_state.brewer_settings = result
-        else:
-            st.warning("Please enter email and password first.")
+        if st.button("Connect"):
+            if email and password:
+                result = connect_to_coffee_brewer(email, password)
+                if not result:
+                    st.warning("Incorrect email or password.")
+                st.session_state.brewer_settings = result
+            else:
+                st.warning("Please enter email and password first.")
 
     st.markdown("---")
 
@@ -362,11 +367,21 @@ with st.sidebar:
         st.markdown("**Existing Profiles**")
         profiles = st.session_state.brewer_settings["profiles"]
         titles = [p["title"] for p in profiles]
+        options = ["— None —"] + titles
+
+        # Determine the index for the selectbox
+        # Default to the first profile if available and none is selected
+        index = 0
+        if "selected_profile_choice" in st.session_state and st.session_state.selected_profile_choice in options:
+            index = options.index(st.session_state.selected_profile_choice)
+        elif titles and not st.session_state.new_profile:
+            index = 1 # Default to the first profile (index 1 because of '— None —')
 
         choice = st.selectbox(
             "Select a Profile", 
-            ["— None —"] + titles, 
-            key="selected_profile_choice"
+            options,
+            index=index,
+            key="selected_profile_choice",
         )
         if choice != "— None —":
             st.session_state.selected_profile_index = titles.index(choice)
