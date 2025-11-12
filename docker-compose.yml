@@ -19,7 +19,9 @@ services:
     # This environment variable sets the PORT inside the container. 
     # For Streamlit, this is usually unnecessary as it defaults to 8501, but it's okay to include.
     environment:
-      - PORT=8501
+      - FELLOW_EMAIL=${FELLOW_EMAIL}
+      - FELLOW_PASSWORD=${FELLOW_PASSWORD}
+      - PORT=8501 # Streamlit's default port
       
     # Recommended: automatically restart the container if it stops unexpectedly
     restart: unless-stopped

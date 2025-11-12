@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 import math
 from fellow_aiden import FellowAiden
 from fellow_aiden.profile import CoffeeProfile
@@ -242,13 +243,22 @@ if "selected_profile_index" not in st.session_state:
 # Sidebar
 # ------------------------------------------------------------------------------
 with st.sidebar:
-    st.header("Fellow Email Address")
-    email = st.text_input(" ", placeholder="Enter your email", 
-                          key="email", label_visibility="collapsed")
+    # Try to get credentials from environment variables first
+    env_email = os.environ.get('FELLOW_EMAIL')
+    env_password = os.environ.get('FELLOW_PASSWORD')
 
-    st.header("Fellow Password")
-    password = st.text_input(" ", placeholder="Enter your password", 
-                             type="password", key="password", label_visibility="collapsed")
+    if env_email and env_password:
+        email = env_email
+        password = env_password
+        st.sidebar.success("Fellow credentials loaded from environment.")
+    else:
+        st.header("Fellow Email Address")
+        email = st.text_input(" ", placeholder="Enter your email", 
+                              key="email", label_visibility="collapsed")
+
+        st.header("Fellow Password")
+        password = st.text_input(" ", placeholder="Enter your password", 
+                                 type="password", key="password", label_visibility="collapsed")
 
     # Connect button
     if st.button("Connect"):
